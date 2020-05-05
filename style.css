@@ -6,9 +6,8 @@
 }
 
 body {
-    background-image: url('./images/sky.jpg');
-    background-size: cover;
-    background-position: top cover;
+    background: linear-gradient(0deg, rgba(255,255,255,1) 0%, rgba(85,170,187,1) 100%);
+    background-color: rgba(85,170,187,1);
 }
 
 .app-wrap {
