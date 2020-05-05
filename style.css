@@ -6,7 +6,7 @@
 }
 
 body {
-    background-image: url('./sky.jpg');
+    background-image: url('./images/sky.jpg');
     background-size: cover;
     background-position: top cover;
 }
@@ -22,17 +22,18 @@ header {
     justify-content: center;
     align-items: center;
     padding: 50px 15px 15px;
+    margin-bottom: 35px;
 }
 
 header input {
     width: 100%;
-    max-width: 280px;
+    max-width: 350px;
     padding: 15px;
     border: none;
     outline: none;
+    text-align: center;
     background-color: rgba(255, 255, 255, 0.5);
-    border: solid 1px #FFFFFF;
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 300;
     transition: 0.2s ease-out;
     color: #273944;
@@ -43,17 +44,17 @@ header input:focus {
 }
 
 main {
-    flex: 1 1 100%;
-    padding: 25px 25px 50px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
 }
 
+
 .location .city {
     color: #FFFFFF;
-    font-size: 32px;
+    text-transform: uppercase;
+    font-size: 28px;
     font-weight: 500;
     margin-bottom: 5px;
 }
@@ -61,13 +62,21 @@ main {
 .location .date {
     color: #FFFFFF;
     font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.current {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr 2fr 1fr;
 }
 
 .current .temp {
+    align-self: center;
     color: #FFFFFF;
-    font-size: 102px;
-    font-weight: 900;
-    margin: 30px 0;
+    font-size: 55px;
+    font-weight: 500;
+    margin: 10px 0;
     text-shadow: 2px 2px rgba(0, 0, 0, 0.3);
 }
 
@@ -77,14 +86,23 @@ main {
 
 .current .weather {
     color: #FFFFFF;
-    font-size: 50px;
+    font-size: 45px;
     font-weight: 700;
     font-family: 'Caveat', cursive;
-    margin-bottom: 15px;
 }
 
 .current .hi-low {
     color: #FFFFFF;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 500;
+}
+
+.current .weather-icon {
+    grid-row: 1 / -1;
+    margin: 15px;
+    align-self: center;
+}
+
+.current .weather-icon img {
+    max-width: 150px;
 }

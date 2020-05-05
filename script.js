@@ -19,6 +19,46 @@ function getResults (query) {
     }).then(displayResults);
 }
 
+function weatherIcon (weather) {
+    const weatherName = weather.weather[0].main.toLowerCase();
+    const weatherId = weather.weather[0].id;
+    const weatherIcon = document.querySelector('.current .weather-icon');
+    switch (weatherName) {
+        case "clouds":
+            if (weatherId == "801") {
+                weatherIcon.innerHTML ='<img src="./images/partcloudy.png"></img>';
+                break;
+            } else {
+            weatherIcon.innerHTML ='<img src="./images/cloudy.png"></img>';
+            break; 
+            };
+        case "clear":
+            weatherIcon.innerHTML ='<img src="./images/sunny.png"></img>';
+            break;
+        case "fog":
+            weatherIcon.innerHTML ='<img src="./images/fog.png"></img>';
+            break;
+        case "rain":
+            weatherIcon.innerHTML ='<img src="./images/rainy.png"></img>';
+            break;
+        case "sunny":
+            weatherIcon.innerHTML ='<img src="./images/sunny.png"></img>';
+            break;
+        case "snow":
+            weatherIcon.innerHTML ='<img src="./images/snowy.png"></img>';
+            break;
+        case "thunderstorm":
+            weatherIcon.innerHTML ='<img src="./images/stormy.png"></img>';
+            break;
+        case "drizzle":
+            weatherIcon.innerHTML ='<img src="./images/drizzle.png"></img>';
+            break;            
+        default:
+            break;
+    }
+    console.log(weather.weather[0].main);
+}
+
 function displayResults (weather) {
     let city = document.querySelector('.location .city');
     city.innerText = `${weather.name}, ${weather.sys.country}`;
@@ -32,6 +72,8 @@ function displayResults (weather) {
   
     let weather_el = document.querySelector('.current .weather');
     weather_el.innerText = weather.weather[0].main;
+
+    weatherIcon(weather);
   
     let hilow = document.querySelector('.hi-low');
     hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
