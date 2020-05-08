@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weather App</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css?family=Caveat|Karla&display=swap" rel="stylesheet"> 
+  <link href="https://fonts.googleapis.com/css?family=Caveat|Jost&display=swap" rel="stylesheet"> 
 
 </head>
 <body>
@@ -15,7 +15,7 @@
     </header>
     <main>
       <div class="location">
-        <div class="city">Northampton, GB</div>
+        <div class="city"></div>
         <div class="date">Sunday, 3 May 2020</div>
       </div>
       <div class="current">
@@ -23,6 +23,41 @@
         <div class="weather">Sunny</div>
         <div class="temp">15<span>°C</span></div>
         <div class="hi-low">13°C / 17°C</div>
+      </div>
+      <div class="show-details">
+        <p>more details</p>
+        <a href=# id="button-show" class="button"><img src="./images/show.png"></a>
+        <a href=# id="button-hide" class="button hidden"><img src="./images/hide.png"></a>
+      </div>
+      <div class="details hidden">
+          <div>
+            <img src="./images/sunrise.png">
+          </div>
+          <div>
+            <img src="./images/sunset.png">
+          </div>
+          <div class="sunrise">
+            6:00
+          </div>
+          <div class="sunset">
+            20:00
+          </div>
+          <div>
+            <img src="./images/wind.png">
+          </div>
+          <div>
+            <img src="./images/humid.png">
+          </div>
+          <div class="wind"></div>
+          <div class="humid"></div>
+          <div>
+            <img src="./images/cloud.png">
+          </div>
+          <div>
+            <img src="./images/pressure.png">
+          </div>
+          <div class="cloud"></div>
+          <div class="pressure"></div>
       </div>
     </main>
   </div>

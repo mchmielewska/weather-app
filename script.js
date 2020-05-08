@@ -3,6 +3,12 @@ const api = {
     base: "https://api.openweathermap.org/data/2.5/"
 }
 
+let now = new Date();
+let date = document.querySelector('.location .date');
+date.innerText = dateBuilder(now);
+
+getResultsLocal();
+
 const searchbox = document.querySelector('.search-box');
 searchbox.addEventListener('keypress', setQuery);
 
@@ -17,6 +23,27 @@ function getResults (query) {
     .then(weather => {
       return weather.json();
     }).then(displayResults);
+}
+
+function getResultsLocal () {
+    getLocation = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+          currentLocation.innerText = "Geolocation is not supported by this browser.";
+        }
+      }
+      
+    function showPosition(position) {
+        fetch(`${api.base}weather?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=metric&APPID=${api.key}`)
+        .then(weather => {
+            return weather.json();
+        }).then(weather => {
+            displayResults(weather);
+        });
+    }
+    getLocation();
+    
 }
 
 function weatherIcon (weather) {
@@ -56,16 +83,11 @@ function weatherIcon (weather) {
         default:
             break;
     }
-    console.log(weather.weather[0].main);
 }
 
 function displayResults (weather) {
     let city = document.querySelector('.location .city');
     city.innerText = `${weather.name}, ${weather.sys.country}`;
-  
-    let now = new Date();
-    let date = document.querySelector('.location .date');
-    date.innerText = dateBuilder(now);
 
     let temp = document.querySelector('.current .temp');
     temp.innerHTML = `${Math.round(weather.main.temp)}<span>°c</span>`;
@@ -77,7 +99,29 @@ function displayResults (weather) {
   
     let hilow = document.querySelector('.hi-low');
     hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
-}
+
+    let sunriseDiv = document.querySelector('.sunrise');
+    const sunrise = new Date(weather.sys.sunrise * 1000);
+    const sunriseTime = `${sunrise.getHours()}:${sunrise.getMinutes()}`;
+    sunriseDiv.innerText = sunriseTime;
+
+    let sunsetDiv = document.querySelector('.sunset');
+    const sunset = new Date(weather.sys.sunset * 1000);
+    const sunsetTime = `${sunset.getHours()}:${sunset.getMinutes()}`;
+    sunsetDiv.innerText = sunsetTime;
+
+    let wind = document.querySelector('.wind')
+    wind.innerText = `${weather.wind.speed} m/s`;
+
+    let humidity = document.querySelector('.humid');
+    humidity.innerText = `${weather.main.humidity} %`;
+
+    let cloudiness = document.querySelector('.cloud');
+    cloudiness.innerText = `${weather.clouds.all} %`;
+
+    let pressure = document.querySelector('.pressure');
+    pressure.innerText = `${weather.main.pressure} hPa`;    
+}   
  
 function dateBuilder (d) {
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -90,3 +134,28 @@ function dateBuilder (d) {
   
     return `${day} ${date} ${month} ${year}`;
 }
+
+const details = document.querySelector('.details');
+const buttons = document.getElementsByClassName('button');
+const showButton = document.getElementById('button-show');
+const hideButton = document.getElementById('button-hide');
+const detailsText = document.querySelector('.show-details p');
+
+let showDetails = false;
+
+for (const button of buttons) {
+button.addEventListener("click", () => {
+    showDetails = !showDetails;
+    if (showDetails === true) {
+        details.classList.remove('hidden');
+        hideButton.classList.remove('hidden');
+        showButton.classList.add('hidden');
+        detailsText.innerText = "hide details";
+    } else {
+        details.classList.add('hidden');
+        hideButton.classList.add('hidden');
+        showButton.classList.remove('hidden');
+        detailsText.innerText = "show details";
+    }
+});
+};

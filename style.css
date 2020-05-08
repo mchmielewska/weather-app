@@ -2,7 +2,8 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Karla', sans-serif;
+    font-family: 'Jost', sans-serif;
+    color: #FFFFFF;
 }
 
 body {
@@ -64,10 +65,11 @@ main {
     margin-bottom: 30px;
 }
 
+
 .current {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: 1fr 2fr 1fr;
+    grid-template-rows: 1fr 2fr 1fr 1fr;
 }
 
 .current .temp {
@@ -104,4 +106,45 @@ main {
 
 .current .weather-icon img {
     max-width: 150px;
+}
+
+.details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(100px, 175px));
+    width: 100%;
+    max-width: 350px;
+    color: #FFFFFF;
+    font-size: 20px;
+    align-items: center;
+    text-align: center;
+}
+
+.details img {
+    width: 50px;
+    height: 50px;
+    margin-top: 15px;
+}
+
+.wind, .humid, .cloud, .pressure {
+    color: #FFFFFF;
+    font-size: 15px;
+    align-items: center;
+    text-align: center;
+}
+
+.show-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.show-details img {
+    width: 50px;
+    height: 50px;
+    margin-top: 15px;
+}
+
+.hidden {
+    display: none;
 }
