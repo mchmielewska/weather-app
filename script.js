@@ -134,8 +134,8 @@ function displayResults (weather) {
     detailsButton[0].classList.remove('hidden');
     detailsButton[0].classList.add('mobile-visible');
   
-    // let detailsElement = document.getElementsByClassName('details')
-    // detailsElement[0].classList.remove('hidden');
+    let detailsElement = document.getElementsByClassName('details');
+    detailsElement[0].classList.remove('hidden');
 
     let hilow = document.querySelector('.hi-low');
     hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
@@ -215,12 +215,19 @@ function forecastDateBuilder (d) {
 }
 
 const details = document.querySelector('.details');
+const showDetailsElement = document.getElementsByClassName('show-details')
+showDetailsElement[0].innerHTML = 
+        `
+            <p>hide details</p>
+            <a href=# id="button-show" class="button hidden"><img src="./images/show.png"></a>
+            <a href=# id="button-hide" class="button"><img src="./images/hide.png"></a>
+        `
 const buttons = document.getElementsByClassName('button');
 const showButton = document.getElementById('button-show');
 const hideButton = document.getElementById('button-hide');
 const detailsText = document.querySelector('.show-details p');
 
-let showDetails = false;
+let showDetails = true;
 
 for (const button of buttons) {
 button.addEventListener("click", () => {
