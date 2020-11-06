@@ -15,6 +15,7 @@ searchbox.addEventListener('keypress', setQuery);
 function setQuery (e) {
     if (e.keyCode == 13) {
         getResults(searchbox.value);
+        getResultsForecast(searchbox.value);
     }
 }
 
@@ -23,6 +24,13 @@ function getResults (query) {
     .then(weather => {
       return weather.json();
     }).then(displayResults);
+}
+
+function getResultsForecast (query) {
+    fetch(`${api.base}forecast?q=${query}&cnt=16&units=metric&APPID=${api.key}`)
+    .then(forecast => {
+        return forecast.json();
+    }).then(displayForecast);
 }
 
 function getResultsLocal () {
@@ -41,15 +49,36 @@ function getResultsLocal () {
         }).then(weather => {
             displayResults(weather);
         });
+
+        fetch(`${api.base}forecast?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=metric&cnt=16&APPID=${api.key}`)
+        .then(weather => {
+            return weather.json();
+        }).then(weather => {
+            displayForecast(weather);
+        });
     }
     getLocation();
     
 }
 
-function weatherIcon (weather) {
-    const weatherName = weather.weather[0].main.toLowerCase();
-    const weatherId = weather.weather[0].id;
-    const weatherIcon = document.querySelector('.current .weather-icon');
+function weatherIcon (weather, weatherClass, id=0) {
+
+    const weatherName = weather.main.toLowerCase();
+    const weatherId = weather.id;
+
+    const checkClass = function() {
+        if (weatherClass === 'current') {
+            let query = `.current .weather-icon`
+            return query;
+        } else {
+            let query = `.el${id}`
+            return query;
+        }   
+    }
+
+    const query = checkClass();
+    const weatherIcon = document.querySelector(`${query}`);
+
     switch (weatherName) {
         case "clouds":
             if (weatherId == "801") {
@@ -63,6 +92,9 @@ function weatherIcon (weather) {
             weatherIcon.innerHTML ='<img src="./images/sunny.png"></img>';
             break;
         case "fog":
+            weatherIcon.innerHTML ='<img src="./images/fog.png"></img>';
+            break;
+        case "mist":
             weatherIcon.innerHTML ='<img src="./images/fog.png"></img>';
             break;
         case "rain":
@@ -85,6 +117,7 @@ function weatherIcon (weather) {
     }
 }
 
+
 function displayResults (weather) {
     let city = document.querySelector('.location .city');
     city.innerText = `${weather.name}, ${weather.sys.country}`;
@@ -95,19 +128,26 @@ function displayResults (weather) {
     let weather_el = document.querySelector('.current .weather');
     weather_el.innerText = weather.weather[0].main;
 
-    weatherIcon(weather);
+    weatherIcon(weather.weather[0], 'current');
+
+    let detailsButton = document.getElementsByClassName('show-details')
+    detailsButton[0].classList.remove('hidden');
+    detailsButton[0].classList.add('mobile-visible');
   
+    // let detailsElement = document.getElementsByClassName('details')
+    // detailsElement[0].classList.remove('hidden');
+
     let hilow = document.querySelector('.hi-low');
     hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
 
     let sunriseDiv = document.querySelector('.sunrise');
     const sunrise = new Date(weather.sys.sunrise * 1000);
-    const sunriseTime = `${sunrise.getHours()}:${sunrise.getMinutes()}`;
+    const sunriseTime = `${sunrise.getHours()}:${zeroPad(sunrise.getMinutes(),2)}`;
     sunriseDiv.innerText = sunriseTime;
 
     let sunsetDiv = document.querySelector('.sunset');
     const sunset = new Date(weather.sys.sunset * 1000);
-    const sunsetTime = `${sunset.getHours()}:${sunset.getMinutes()}`;
+    const sunsetTime = `${sunset.getHours()}:${zeroPad(sunset.getMinutes(),2)}`;
     sunsetDiv.innerText = sunsetTime;
 
     let wind = document.querySelector('.wind')
@@ -122,6 +162,35 @@ function displayResults (weather) {
     let pressure = document.querySelector('.pressure');
     pressure.innerText = `${weather.main.pressure} hPa`;    
 }   
+
+const zeroPad = (num, places) => String(num).padStart(places, '0')
+
+function displayForecast (weather) {
+    let forecastParentElement = document.getElementsByClassName('forecast')[0];
+    
+    while (forecastParentElement.firstChild) {
+        forecastParentElement.removeChild(forecastParentElement.lastChild);
+    }
+
+    for (i in weather.list) {
+        const id = i;
+        let checkedWeather = weather.list[i];
+
+        let forecastElement = document.createElement("div");
+        forecastElement.className = "forecast-item";
+        forecastParentElement.appendChild(forecastElement);
+
+        let time = new Date(checkedWeather.dt*1000);
+
+        forecastElement.innerHTML = 
+            `<div class="forecast-item-date">${forecastDateBuilder(time)}<br>${time.getHours()}:${zeroPad(time.getMinutes(),2)}</div>
+            <div class="weather-icon el${id}"></div>
+            <div class="forecast-weather">${checkedWeather.weather[0].main}</div>
+            <div class="forecast-temp">${Math.round(checkedWeather.main.temp)}<span>°c</span></div>
+            `
+        weatherIcon(checkedWeather.weather[0], 'forecast-item', id);
+    }
+}
  
 function dateBuilder (d) {
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -133,6 +202,16 @@ function dateBuilder (d) {
     let year = d.getFullYear();
   
     return `${day} ${date} ${month} ${year}`;
+}
+
+function forecastDateBuilder (d) {
+    let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  
+    let day = days[d.getDay()];
+    let date = d.getDate();
+    let month = d.getMonth();
+  
+    return `${day} ${date}.${month}`;
 }
 
 const details = document.querySelector('.details');
@@ -150,11 +229,13 @@ button.addEventListener("click", () => {
         details.classList.remove('hidden');
         hideButton.classList.remove('hidden');
         showButton.classList.add('hidden');
+        detailsText.classList.remove('hidden');
         detailsText.innerText = "hide details";
     } else {
         details.classList.add('hidden');
         hideButton.classList.add('hidden');
         showButton.classList.remove('hidden');
+        detailsText.classList.remove('hidden');
         detailsText.innerText = "show details";
     }
 });

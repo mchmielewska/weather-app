@@ -13,53 +13,67 @@
     <header>
       <input type="text" autocomplete="off" class="search-box" placeholder="Search for a city...">
     </header>
-    <main>
-      <div class="location">
-        <div class="city"></div>
-        <div class="date"></div>
+    <div class='data-wrap'>
+      <div class="main-container">
+        <div class="location">
+          <div class="city"></div>
+          <div class="date"></div>
+        </div>
+        <div class="current">
+          <div class="weather-icon"></div>
+          <div class="weather"></div>
+          <div class="temp"></div>
+          <div class="hi-low"></div>
+        </div>
+        <div class="show-details hidden">
+          <p>show details</p>
+          <a href=# id="button-show" class="button"><img src="./images/show.png"></a>
+          <a href=# id="button-hide" class="button hidden"><img src="./images/hide.png"></a>
+        </div>
+        <div class="details hidden">
+          <div class='details-item'>
+              <div>
+                <img src="./images/sunrise.png">
+              </div>
+              <div class="sunrise">
+              </div>
+          </div>
+          <div class='details-item'>
+            <div>
+              <img src="./images/sunset.png">
+            </div>
+            <div class="sunset">
+            </div>
+          </div>
+          <div class='details-item'>
+            <div>
+              <img src="./images/wind.png">
+            </div>
+            <div class="wind"></div>
+          </div>
+          <div class='details-item'>
+            <div>
+              <img src="./images/humid.png">
+            </div>
+            <div class="humid"></div>
+          </div>
+          <div class='details-item'>
+            <div>
+              <img src="./images/cloud.png">
+            </div>
+            <div class="cloud"></div>
+          </div>
+          <div class='details-item'>
+            <div>
+              <img src="./images/pressure.png">
+            </div>
+            <div class="pressure"></div>
+          </div>  
+        </div>
       </div>
-      <div class="current">
-        <div class="weather-icon"></div>
-        <div class="weather"></div>
-        <div class="temp"></div>
-        <div class="hi-low"></div>
+      <div class="forecast">
       </div>
-      <div class="show-details">
-        <p>more details</p>
-        <a href=# id="button-show" class="button"><img src="./images/show.png"></a>
-        <a href=# id="button-hide" class="button hidden"><img src="./images/hide.png"></a>
-      </div>
-      <div class="details hidden">
-          <div>
-            <img src="./images/sunrise.png">
-          </div>
-          <div>
-            <img src="./images/sunset.png">
-          </div>
-          <div class="sunrise">
-            6:00
-          </div>
-          <div class="sunset">
-            20:00
-          </div>
-          <div>
-            <img src="./images/wind.png">
-          </div>
-          <div>
-            <img src="./images/humid.png">
-          </div>
-          <div class="wind"></div>
-          <div class="humid"></div>
-          <div>
-            <img src="./images/cloud.png">
-          </div>
-          <div>
-            <img src="./images/pressure.png">
-          </div>
-          <div class="cloud"></div>
-          <div class="pressure"></div>
-      </div>
-    </main>
+    </div>
   </div>
   <script src="script.js"></script>
 </body>
