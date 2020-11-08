@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weather App</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css?family=Caveat|Jost&display=swap" rel="stylesheet"> 
+  <link href="https://fonts.googleapis.com/css?family=Caveat|Jost&display=swap" rel="stylesheet">
 
 </head>
+
 <body>
   <div class="app-wrap">
     <header>
       <input type="text" autocomplete="off" class="search-box" placeholder="Search for a city...">
     </header>
+    <div id="loader"></div>
     <div class='data-wrap'>
       <div class="main-container">
         <div class="location">
@@ -29,11 +32,11 @@
         </div>
         <div class="details hidden">
           <div class='details-item'>
-              <div>
-                <img src="./images/sunrise.png">
-              </div>
-              <div class="sunrise">
-              </div>
+            <div>
+              <img src="./images/sunrise.png">
+            </div>
+            <div class="sunrise">
+            </div>
           </div>
           <div class='details-item'>
             <div>
@@ -65,7 +68,7 @@
               <img src="./images/pressure.png">
             </div>
             <div class="pressure"></div>
-          </div>  
+          </div>
         </div>
       </div>
       <div class="forecast">
@@ -74,4 +77,5 @@
   </div>
   <script src="script.js"></script>
 </body>
+
 </html>

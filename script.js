@@ -4,16 +4,96 @@ const api = {
 }
 
 let now = new Date();
+
+let hoursFromNoon = Math.abs(12 - now.getHours())
+let dayPercent = hoursFromNoon/12
+
+const zeroPad = (num, places) => String(num).padStart(places, '0')
+
+function LightenDarkenColor(col, amt) {
+  
+    var usePound = false;
+  
+    if (col[0] == "#") {
+        col = col.slice(1);
+        usePound = true;
+    }
+ 
+    var num = parseInt(col,16);
+ 
+    var r = (num >> 16) + amt;
+ 
+    if (r > 255) r = 255;
+    else if  (r < 0) r = 0;
+ 
+    var b = ((num >> 8) & 0x00FF) + amt;
+ 
+    if (b > 255) b = 255;
+    else if  (b < 0) b = 0;
+ 
+    var g = (num & 0x0000FF) + amt;
+ 
+    if (g > 255) g = 255;
+    else if (g < 0) g = 0;
+ 
+    const hexColor =  (g | (b << 8) | (r << 16)).toString(16)
+    return (usePound?"#":"") + zeroPad(hexColor,6);
+  
+}
+let body = document.querySelector('body');
+let backgroundColor = window.getComputedStyle(body).backgroundColor
+
+function RGBToHex(rgb) {
+    // Choose correct separator
+    let sep = rgb.indexOf(",") > -1 ? "," : " ";
+    // Turn "rgb(r,g,b)" into [r,g,b]
+    rgb = rgb.substr(4).split(")")[0].split(sep);
+  
+    let r = (+rgb[0]).toString(16),
+        g = (+rgb[1]).toString(16),
+        b = (+rgb[2]).toString(16);
+  
+    if (r.length == 1)
+      r = "0" + r;
+    if (g.length == 1)
+      g = "0" + g;
+    if (b.length == 1)
+      b = "0" + b;
+  
+    const hexColor = r + g + b
+    return "#" + zeroPad(hexColor,6);
+  }
+
+const newColor = LightenDarkenColor(RGBToHex(backgroundColor), -dayPercent*100);
+
+document.body.style.backgroundColor = newColor
+
 let date = document.querySelector('.location .date');
 date.innerText = dateBuilder(now);
 
+displayLoader();
 getResultsLocal();
 
 const searchbox = document.querySelector('.search-box');
 searchbox.addEventListener('keypress', setQuery);
 
+function displayLoader() {
+    const loader = document.getElementById('loader')
+    loader.style.display = "block";
+    let dataWrap = document.getElementsByClassName('data-wrap')[0];
+    dataWrap.classList.add('hidden');
+}
+
+function hideLoader() {
+    const loader = document.getElementById('loader')
+    loader.style.display = "none";
+    let dataWrap = document.getElementsByClassName('data-wrap')[0];
+    dataWrap.classList.remove('hidden');
+}
+
 function setQuery (e) {
     if (e.keyCode == 13) {
+        displayLoader();
         getResults(searchbox.value);
         getResultsForecast(searchbox.value);
     }
@@ -119,6 +199,7 @@ function weatherIcon (weather, weatherClass, id=0) {
 
 
 function displayResults (weather) {
+    hideLoader();
     let city = document.querySelector('.location .city');
     city.innerText = `${weather.name}, ${weather.sys.country}`;
 
@@ -162,8 +243,6 @@ function displayResults (weather) {
     let pressure = document.querySelector('.pressure');
     pressure.innerText = `${weather.main.pressure} hPa`;    
 }   
-
-const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 function displayForecast (weather) {
     let forecastParentElement = document.getElementsByClassName('forecast')[0];

@@ -7,8 +7,8 @@
 }
 
 body {
-    background: linear-gradient(0deg, rgb(99, 158, 168) 0%, rgb(3, 80, 102) 100%);
-    background-color: rgba(85,170,187,1);
+    /* background: linear-gradient(0deg, rgb(99, 158, 168) 0%, rgb(3, 80, 102) 100%); */
+    background-color: rgb(54, 113, 124);
 }
 
 .app-wrap {
@@ -125,7 +125,6 @@ header input:focus {
     grid-template-columns: repeat(3, minmax(100px, 175px));
     grid-gap: 5px;
     color: #FFFFFF;
-    font-size: 20px;
     align-items: center;
     text-align: center;
     background-color: rgba(255, 255, 255, 0.1);
@@ -208,6 +207,25 @@ header input:focus {
     margin: 20px 0 0 0;
 }
 
+#loader {
+    padding: 0;
+    margin: 0;
+    border: 1.6rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top: 1.6rem solid white;
+    width: 12rem;
+    height: 12rem;
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 @media (max-width: 760px) { 
 
@@ -248,10 +266,10 @@ header input:focus {
     }
 }
 
-@media (max-width: 360px) { 
+@media (max-width: 350px) { 
     .forecast-item {
         margin-bottom: 15px;
         flex-grow: 0;
-        max-width: 125px;
+        max-width: 135px;
     }
 }
