@@ -5,6 +5,9 @@ const api = {
 
 let now = new Date();
 
+let forecastWeather;
+let currentWeather;
+
 let hoursFromNoon = Math.abs(12 - now.getHours())
 let dayPercent = hoursFromNoon/12
 
@@ -99,11 +102,13 @@ function setQuery (e) {
     }
 }
 
+var forecastStore = getResultsForecast()
+
 function getResults (query) {
     fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
     .then(weather => {
       return weather.json();
-    }).then(displayResults);
+    }).then(displayMainWeather);
 }
 
 function getResultsForecast (query) {
@@ -112,6 +117,12 @@ function getResultsForecast (query) {
         return forecast.json();
     }).then(displayForecast);
 }
+
+function displayLocation (weather) {
+    let city = document.querySelector('.location .city');
+    city.innerText = `${weather.name}, ${weather.sys.country}`;
+}
+
 
 function getResultsLocal () {
     getLocation = () => {
@@ -127,7 +138,9 @@ function getResultsLocal () {
         .then(weather => {
             return weather.json();
         }).then(weather => {
-            displayResults(weather);
+            currentWeather = weather;
+            displayLocation(weather);
+            displayMainWeather(weather);
         });
 
         fetch(`${api.base}forecast?lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=metric&cnt=16&APPID=${api.key}`)
@@ -198,10 +211,22 @@ function weatherIcon (weather, weatherClass, id=0) {
 }
 
 
-function displayResults (weather) {
+function updateDetailsItem (id, content, rawValue) {
+    let detailsItem = document.getElementById(id);
+    if (rawValue !== undefined) {
+        detailsItem.classList.remove('hidden')
+        let item = detailsItem.querySelector('.content')
+        item.innerText = content;
+    } else {
+        detailsItem.classList.add('hidden')
+    }
+}
+
+function displayMainWeather (weather) {
+    let time = new Date(weather.dt*1000);
+    date.innerText = dateBuilder(time);
+
     hideLoader();
-    let city = document.querySelector('.location .city');
-    city.innerText = `${weather.name}, ${weather.sys.country}`;
 
     let temp = document.querySelector('.current .temp');
     temp.innerHTML = `${Math.round(weather.main.temp)}<span>°c</span>`;
@@ -219,32 +244,53 @@ function displayResults (weather) {
     detailsElement[0].classList.remove('hidden');
 
     let hilow = document.querySelector('.hi-low');
-    hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
-
-    let sunriseDiv = document.querySelector('.sunrise');
+    hilow.innerText = `${weather.main.temp_min.toFixed(1)}°c / ${weather.main.temp_max.toFixed(1)}°c`;
+        
     const sunrise = new Date(weather.sys.sunrise * 1000);
     const sunriseTime = `${sunrise.getHours()}:${zeroPad(sunrise.getMinutes(),2)}`;
-    sunriseDiv.innerText = sunriseTime;
 
-    let sunsetDiv = document.querySelector('.sunset');
     const sunset = new Date(weather.sys.sunset * 1000);
     const sunsetTime = `${sunset.getHours()}:${zeroPad(sunset.getMinutes(),2)}`;
-    sunsetDiv.innerText = sunsetTime;
 
-    let wind = document.querySelector('.wind')
-    wind.innerText = `${weather.wind.speed} m/s`;
+    updateDetailsItem('sunrise', sunriseTime, weather.sys.sunrise);
+    updateDetailsItem('sunset', sunsetTime, weather.sys.sunset)
 
-    let humidity = document.querySelector('.humid');
-    humidity.innerText = `${weather.main.humidity} %`;
-
-    let cloudiness = document.querySelector('.cloud');
-    cloudiness.innerText = `${weather.clouds.all} %`;
-
-    let pressure = document.querySelector('.pressure');
-    pressure.innerText = `${weather.main.pressure} hPa`;    
+    updateDetailsItem('wind', `${weather.wind.speed} m/s`, weather.wind.speed);
+    updateDetailsItem('humid', `${weather.main.humidity} %`, weather.main.humidity);
+    updateDetailsItem('cloud', `${weather.clouds.all} %`, weather.clouds.all);
+    updateDetailsItem('pressure', `${weather.main.pressure} hPa`, weather.main.pressure)
+  
 }   
 
+function removeActive () {
+    const forecastItems = document.getElementsByClassName('active');
+    for (const item of forecastItems) {
+            item.classList.remove('active');
+    };
+}
+
+function checkDailyForecast () {
+    const forecastItems = document.getElementsByClassName('forecast-item');
+
+    for (const item of forecastItems) {
+        item.addEventListener("click", () => {
+            if (!item.classList.contains('active')) {
+                removeActive();
+                item.classList.add('active');
+                displayMainWeather(forecastWeather.list[item.dataset.index])
+            } else {
+                removeActive();
+                displayMainWeather (currentWeather);
+            }
+            }
+        );
+    };
+}
+
 function displayForecast (weather) {
+
+    forecastWeather = weather;
+
     let forecastParentElement = document.getElementsByClassName('forecast')[0];
     
     while (forecastParentElement.firstChild) {
@@ -257,18 +303,30 @@ function displayForecast (weather) {
 
         let forecastElement = document.createElement("div");
         forecastElement.className = "forecast-item";
+        forecastElement.dataset.index = i;
         forecastParentElement.appendChild(forecastElement);
 
         let time = new Date(checkedWeather.dt*1000);
 
         forecastElement.innerHTML = 
-            `<div class="forecast-item-date">${forecastDateBuilder(time)}<br>${time.getHours()}:${zeroPad(time.getMinutes(),2)}</div>
+            `<div class="forecast-item-date">
+                ${forecastDateBuilder(time)}
+                <br>
+                ${time.getHours()}:${zeroPad(time.getMinutes(),2)}
+            </div>
             <div class="weather-icon el${id}"></div>
-            <div class="forecast-weather">${checkedWeather.weather[0].main}</div>
-            <div class="forecast-temp">${Math.round(checkedWeather.main.temp)}<span>°c</span></div>
+            <div class="forecast-weather">
+                ${checkedWeather.weather[0].main}
+            </div>
+            <div class="forecast-temp">
+                ${Math.round(checkedWeather.main.temp)}
+                <span>°c</span>
+            </div>
             `
         weatherIcon(checkedWeather.weather[0], 'forecast-item', id);
     }
+
+    checkDailyForecast();
 }
  
 function dateBuilder (d) {
@@ -288,7 +346,7 @@ function forecastDateBuilder (d) {
   
     let day = days[d.getDay()];
     let date = d.getDate();
-    let month = d.getMonth();
+    let month = d.getMonth() + 1;
   
     return `${day} ${date}.${month}`;
 }
@@ -326,3 +384,4 @@ button.addEventListener("click", () => {
     }
 });
 };
+
