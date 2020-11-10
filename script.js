@@ -8,10 +8,7 @@ let now = new Date();
 let forecastWeather;
 let currentWeather;
 
-let hoursFromNoon = Math.abs(12 - now.getHours())
-let dayPercent = hoursFromNoon/12
-
-const zeroPad = (num, places) => String(num).padStart(places, '0')
+const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 function LightenDarkenColor(col, amt) {
   
@@ -43,8 +40,6 @@ function LightenDarkenColor(col, amt) {
     return (usePound?"#":"") + zeroPad(hexColor,6);
   
 }
-let body = document.querySelector('body');
-let backgroundColor = window.getComputedStyle(body).backgroundColor
 
 function RGBToHex(rgb) {
     // Choose correct separator
@@ -67,9 +62,17 @@ function RGBToHex(rgb) {
     return "#" + zeroPad(hexColor,6);
   }
 
-const newColor = LightenDarkenColor(RGBToHex(backgroundColor), -dayPercent*100);
+function setBackground(time) {
+    let hoursFromNoon = Math.abs(12 - time.getHours());
+    let dayPercent = hoursFromNoon/12;
 
-document.body.style.backgroundColor = newColor
+    let body = document.querySelector('body');
+    let backgroundColor = window.getComputedStyle(body).backgroundColor;
+
+    const newColor = LightenDarkenColor(RGBToHex(backgroundColor), -dayPercent*100);
+
+    document.body.style.backgroundColor = newColor;
+}
 
 let date = document.querySelector('.location .date');
 date.innerText = dateBuilder(now);
@@ -108,7 +111,11 @@ function getResults (query) {
     fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
     .then(weather => {
       return weather.json();
-    }).then(displayMainWeather);
+    }).then(weather => {
+        currentWeather = weather;
+        displayLocation(weather);
+        displayMainWeather(weather);
+    });
 }
 
 function getResultsForecast (query) {
@@ -223,8 +230,16 @@ function updateDetailsItem (id, content, rawValue) {
 }
 
 function displayMainWeather (weather) {
-    let time = new Date(weather.dt*1000);
-    date.innerText = dateBuilder(time);
+    let time = new Date(currentWeather.dt*1000);
+    time.setSeconds(time.getSeconds() + currentWeather.timezone);
+    time.setMinutes(time.getMinutes() + time.getTimezoneOffset())
+
+    date.innerHTML = `
+        ${dateBuilder(time)}
+        <br>
+        Time now: ${time.getHours()}:${zeroPad(time.getMinutes(),2)}`;
+    
+    setBackground(time);
 
     hideLoader();
 
@@ -247,9 +262,13 @@ function displayMainWeather (weather) {
     hilow.innerText = `${weather.main.temp_min.toFixed(1)}°c / ${weather.main.temp_max.toFixed(1)}°c`;
         
     const sunrise = new Date(weather.sys.sunrise * 1000);
+    sunrise.setSeconds(sunrise.getSeconds() + weather.timezone);
+    sunrise.setMinutes(sunrise.getMinutes() + time.getTimezoneOffset())
     const sunriseTime = `${sunrise.getHours()}:${zeroPad(sunrise.getMinutes(),2)}`;
 
     const sunset = new Date(weather.sys.sunset * 1000);
+    sunset.setSeconds(sunset.getSeconds() + weather.timezone);
+    sunset.setMinutes(sunset.getMinutes() + time.getTimezoneOffset())
     const sunsetTime = `${sunset.getHours()}:${zeroPad(sunset.getMinutes(),2)}`;
 
     updateDetailsItem('sunrise', sunriseTime, weather.sys.sunrise);
@@ -307,6 +326,7 @@ function displayForecast (weather) {
         forecastParentElement.appendChild(forecastElement);
 
         let time = new Date(checkedWeather.dt*1000);
+        time.setSeconds(time.getSeconds() + currentWeather.timezone)
 
         forecastElement.innerHTML = 
             `<div class="forecast-item-date">
@@ -367,7 +387,8 @@ const detailsText = document.querySelector('.show-details p');
 let showDetails = true;
 
 for (const button of buttons) {
-button.addEventListener("click", () => {
+button.addEventListener("click", (e) => {
+    e.preventDefault();
     showDetails = !showDetails;
     if (showDetails === true) {
         details.classList.remove('hidden');
