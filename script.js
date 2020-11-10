@@ -1,77 +1,138 @@
+const COLOR_MAPPING = {
+    dawn: { "start": "#757abf", "middle": "#8583be", "end": "#eab0d1" },
+    sunrise: { "start": "#94c5f8", "middle": "#a6e6ff", "end": "#b1b5ea" },
+    daytime: { "start": "#9be2fe", "middle": "#90dffe", "end": "#246fa8" },
+    sunset: { "start": "#163C52", "middle": "#C5752D", "end": "#2F1107" },
+    dusk: { "start": "#010A10", "middle": "#59230B", "end": "#2F1107" },
+    night: { "start": "#000000", "middle": "#000000", "end": "#000000" }
+}
+
+function mixGradient(gradient1, gradient2, mixPercentage = 0.5) {
+    return {
+        "start": chroma.mix(gradient1.start, gradient2.start, mixPercentage).hex(),
+        "middle": chroma.mix(gradient1.middle, gradient2.middle, mixPercentage).hex(),
+        "end": chroma.mix(gradient1.end, gradient2.end, mixPercentage).hex()
+    }
+}
+
 const api = {
     key: "3738a06f3afcdf6f27d13d28f7fe7392",
     base: "https://api.openweathermap.org/data/2.5/"
 }
 
+const body = document.querySelector('body');
+const baseBackground = window.getComputedStyle(body).backgroundColor;
+
 let now = new Date();
 
 let forecastWeather;
 let currentWeather;
+let time;
 
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 
-function LightenDarkenColor(col, amt) {
+// function LightenDarkenColor(col, amt) {
   
-    var usePound = false;
+//     var usePound = false;
   
-    if (col[0] == "#") {
-        col = col.slice(1);
-        usePound = true;
+//     if (col[0] == "#") {
+//         col = col.slice(1);
+//         usePound = true;
+//     }
+ 
+//     var num = parseInt(col,16);
+ 
+//     var r = (num >> 16) + amt;
+ 
+//     if (r > 255) r = 255;
+//     else if  (r < 0) r = 0;
+ 
+//     var b = ((num >> 8) & 0x00FF) + amt;
+ 
+//     if (b > 255) b = 255;
+//     else if  (b < 0) b = 0;
+ 
+//     var g = (num & 0x0000FF) + amt;
+ 
+//     if (g > 255) g = 255;
+//     else if (g < 0) g = 0;
+ 
+//     const hexColor =  (g | (b << 8) | (r << 16)).toString(16)
+//     return (usePound?"#":"") + zeroPad(hexColor,6);
+  
+// }
+
+// function RGBToHex(rgb) {
+//     // Choose correct separator
+//     let sep = rgb.indexOf(",") > -1 ? "," : " ";
+//     // Turn "rgb(r,g,b)" into [r,g,b]
+//     rgb = rgb.substr(4).split(")")[0].split(sep);
+  
+//     let r = (+rgb[0]).toString(16),
+//         g = (+rgb[1]).toString(16),
+//         b = (+rgb[2]).toString(16);
+  
+//     if (r.length == 1)
+//       r = "0" + r;
+//     if (g.length == 1)
+//       g = "0" + g;
+//     if (b.length == 1)
+//       b = "0" + b;
+  
+//     const hexColor = r + g + b
+//     return "#" + zeroPad(hexColor,6);
+//   }
+
+// // function setBackground(time) {
+// //     let hoursFromNoon = Math.abs(12 - time.getHours());
+// //     let dayPercent = hoursFromNoon/12;
+
+// //     document.body.style.backgroundColor = RGBToHex(baseBackground);
+
+// //     let backgroundColor = window.getComputedStyle(body).backgroundColor;
+
+// //     const newColor = LightenDarkenColor(RGBToHex(backgroundColor), -dayPercent*100);
+
+// //     document.body.style.backgroundColor = newColor;
+// // }
+
+function setHourlyBackground(sunrise, sunset, time) {
+        
+    const currentTime = time.getHours() + time.getMinutes()/60;
+
+    const dawnTime = sunrise.getHours() + sunrise.getMinutes()/60 - 1;
+    const sunriseTime = sunrise.getHours() + sunrise.getMinutes()/60;
+    const sunsetTime = sunset.getHours() + sunset.getMinutes()/60;
+    const duskTime = sunset.getHours() + sunset.getMinutes()/60 + 1;
+
+    let mixedGradient;
+
+    let percentage = 0.5;
+
+    if (currentTime < (dawnTime - 1)) {
+        mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
+    } else if (currentTime < dawnTime) {
+        percentage = (currentTime - dawnTime + 1);
+        mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.dawn, percentage);
+    } else if (currentTime >= dawnTime && currentTime<= sunriseTime) {
+        percentage = (currentTime - dawnTime)/(sunriseTime - dawnTime);
+        mixedGradient = mixGradient(COLOR_MAPPING.dawn, COLOR_MAPPING.sunrise, percentage);
+    } else if (currentTime > sunriseTime && currentTime < sunsetTime) {
+        mixedGradient = mixGradient(COLOR_MAPPING.daytime, COLOR_MAPPING.daytime);
+    } else if (currentTime >= sunsetTime && currentTime <= duskTime) {
+        percentage = (currentTime - sunsetTime)/(duskTime - sunsetTime);
+        mixedGradient = mixGradient(COLOR_MAPPING.sunset, COLOR_MAPPING.dusk, percentage);
+    } else if (currentTime <= (duskTime + 1)) {
+        percentage = (duskTime - currentTime + 1);
+        mixedGradient = mixGradient(COLOR_MAPPING.dusk, COLOR_MAPPING.night, percentage);
+    } else if (currentTime > (duskTime + 1)) {
+        mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
     }
- 
-    var num = parseInt(col,16);
- 
-    var r = (num >> 16) + amt;
- 
-    if (r > 255) r = 255;
-    else if  (r < 0) r = 0;
- 
-    var b = ((num >> 8) & 0x00FF) + amt;
- 
-    if (b > 255) b = 255;
-    else if  (b < 0) b = 0;
- 
-    var g = (num & 0x0000FF) + amt;
- 
-    if (g > 255) g = 255;
-    else if (g < 0) g = 0;
- 
-    const hexColor =  (g | (b << 8) | (r << 16)).toString(16)
-    return (usePound?"#":"") + zeroPad(hexColor,6);
-  
-}
 
-function RGBToHex(rgb) {
-    // Choose correct separator
-    let sep = rgb.indexOf(",") > -1 ? "," : " ";
-    // Turn "rgb(r,g,b)" into [r,g,b]
-    rgb = rgb.substr(4).split(")")[0].split(sep);
-  
-    let r = (+rgb[0]).toString(16),
-        g = (+rgb[1]).toString(16),
-        b = (+rgb[2]).toString(16);
-  
-    if (r.length == 1)
-      r = "0" + r;
-    if (g.length == 1)
-      g = "0" + g;
-    if (b.length == 1)
-      b = "0" + b;
-  
-    const hexColor = r + g + b
-    return "#" + zeroPad(hexColor,6);
-  }
-
-function setBackground(time) {
-    let hoursFromNoon = Math.abs(12 - time.getHours());
-    let dayPercent = hoursFromNoon/12;
-
-    let body = document.querySelector('body');
-    let backgroundColor = window.getComputedStyle(body).backgroundColor;
-
-    const newColor = LightenDarkenColor(RGBToHex(backgroundColor), -dayPercent*100);
-
-    document.body.style.backgroundColor = newColor;
+    if (mixedGradient !== undefined) {
+        document.body.style.background = `linear-gradient(0deg, ${mixedGradient.start} 0%, ${mixedGradient.middle} 50%, ${mixedGradient.end} 100%)`;
+    }
+    
 }
 
 let date = document.querySelector('.location .date');
@@ -94,11 +155,28 @@ function hideLoader() {
     const loader = document.getElementById('loader')
     loader.style.display = "none";
     let dataWrap = document.getElementsByClassName('data-wrap')[0];
+    dataWrap.classList.remove('hidden'); 
+}
+
+function showError() {
+    const dataWrap = document.querySelector('.data-wrap');
+    const errorWrap = document.querySelector('#error');
+    dataWrap.classList.add('hidden');
+    errorWrap.classList.remove('hidden');
+    errorWrap.innerText = 'Location not found';
+}
+
+function hideError() {
+    const dataWrap = document.querySelector('.data-wrap');
+    const errorWrap = document.querySelector('#error');
+    errorWrap.innerText = ''
+    errorWrap.classList.add('hidden');
     dataWrap.classList.remove('hidden');
 }
 
 function setQuery (e) {
     if (e.keyCode == 13) {
+        hideError();
         displayLoader();
         getResults(searchbox.value);
         getResultsForecast(searchbox.value);
@@ -115,7 +193,11 @@ function getResults (query) {
         currentWeather = weather;
         displayLocation(weather);
         displayMainWeather(weather);
-    });
+    }).catch(error => {
+        hideLoader();
+        showError();
+        document.body.style.background = 'linear-gradient(0deg, rgb(99, 158, 168) 0%, rgb(3, 80, 102) 100%)';
+    })
 }
 
 function getResultsForecast (query) {
@@ -229,19 +311,23 @@ function updateDetailsItem (id, content, rawValue) {
     }
 }
 
-function displayMainWeather (weather) {
-    let time = new Date(currentWeather.dt*1000);
+function getTime() {
+    time = new Date();
     time.setSeconds(time.getSeconds() + currentWeather.timezone);
-    time.setMinutes(time.getMinutes() + time.getTimezoneOffset())
+    time.setMinutes(time.getMinutes() + time.getTimezoneOffset());
 
     date.innerHTML = `
-        ${dateBuilder(time)}
-        <br>
-        Time now: ${time.getHours()}:${zeroPad(time.getMinutes(),2)}`;
-    
-    setBackground(time);
+    ${dateBuilder(time)}
+    <br>
+    Time now: ${time.getHours()}:${zeroPad(time.getMinutes(),2)}:${zeroPad(time.getSeconds(),2)}`;
+}
 
+let currentInterval;
+function displayMainWeather (weather) {
     hideLoader();
+    getTime();
+
+    setInterval(getTime, 1000);
 
     let temp = document.querySelector('.current .temp');
     temp.innerHTML = `${Math.round(weather.main.temp)}<span>°c</span>`;
@@ -277,8 +363,19 @@ function displayMainWeather (weather) {
     updateDetailsItem('wind', `${weather.wind.speed} m/s`, weather.wind.speed);
     updateDetailsItem('humid', `${weather.main.humidity} %`, weather.main.humidity);
     updateDetailsItem('cloud', `${weather.clouds.all} %`, weather.clouds.all);
-    updateDetailsItem('pressure', `${weather.main.pressure} hPa`, weather.main.pressure)
-  
+    updateDetailsItem('pressure', `${weather.main.pressure} hPa`, weather.main.pressure);
+
+
+    function backgroundCheck() {
+        getTime();
+        setHourlyBackground(sunrise, sunset, time);
+    }
+
+    if (currentInterval) {
+        window.clearInterval(currentInterval);
+    }
+
+    currentInterval = setInterval(backgroundCheck, 1000)
 }   
 
 function removeActive () {
@@ -371,38 +468,41 @@ function forecastDateBuilder (d) {
     return `${day} ${date}.${month}`;
 }
 
-const details = document.querySelector('.details');
-const showDetailsElement = document.getElementsByClassName('show-details')
-showDetailsElement[0].innerHTML = 
-        `
-            <p>hide details</p>
-            <a href=# id="button-show" class="button hidden"><img src="./images/show.png"></a>
-            <a href=# id="button-hide" class="button"><img src="./images/hide.png"></a>
-        `
-const buttons = document.getElementsByClassName('button');
-const showButton = document.getElementById('button-show');
-const hideButton = document.getElementById('button-hide');
-const detailsText = document.querySelector('.show-details p');
+function showDetailsTab() {
+    const details = document.querySelector('.details');
+    const showDetailsElement = document.getElementsByClassName('show-details')
+    showDetailsElement[0].innerHTML = 
+            `
+                <p>hide details</p>
+                <a href=# id="button-show" class="button hidden"><img src="./images/show.png"></a>
+                <a href=# id="button-hide" class="button"><img src="./images/hide.png"></a>
+            `
+    const buttons = document.getElementsByClassName('button');
+    const showButton = document.getElementById('button-show');
+    const hideButton = document.getElementById('button-hide');
+    const detailsText = document.querySelector('.show-details p');
+    
+    let showDetails = true;
+    
+    for (const button of buttons) {
+    button.addEventListener("click", (e) => {
+        e.preventDefault();
+        showDetails = !showDetails;
+        if (showDetails === true) {
+            details.classList.remove('hidden');
+            hideButton.classList.remove('hidden');
+            showButton.classList.add('hidden');
+            detailsText.classList.remove('hidden');
+            detailsText.innerText = "hide details";
+        } else {
+            details.classList.add('hidden');
+            hideButton.classList.add('hidden');
+            showButton.classList.remove('hidden');
+            detailsText.classList.remove('hidden');
+            detailsText.innerText = "show details";
+        }
+    });
+    };
+}
 
-let showDetails = true;
-
-for (const button of buttons) {
-button.addEventListener("click", (e) => {
-    e.preventDefault();
-    showDetails = !showDetails;
-    if (showDetails === true) {
-        details.classList.remove('hidden');
-        hideButton.classList.remove('hidden');
-        showButton.classList.add('hidden');
-        detailsText.classList.remove('hidden');
-        detailsText.innerText = "hide details";
-    } else {
-        details.classList.add('hidden');
-        hideButton.classList.add('hidden');
-        showButton.classList.remove('hidden');
-        detailsText.classList.remove('hidden');
-        detailsText.innerText = "show details";
-    }
-});
-};
-
+showDetailsTab();
