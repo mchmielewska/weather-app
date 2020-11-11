@@ -9,13 +9,15 @@
 body {
     background: linear-gradient(0deg, rgb(99, 158, 168) 0%, rgb(3, 80, 102) 100%);
     background-color: rgb(54, 113, 124);
+    background-repeat: no-repeat;
 }
 
 .app-wrap {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    align-items: center
+    align-items: center;
+    justify-items: center;
 }
 
 header {
@@ -51,7 +53,7 @@ header input:focus {
     grid-template-columns: 1fr 1fr;
     align-items: center;
     text-align: center;
-    grid-gap: 15px;
+    grid-gap: 2em;
 }
 
 .location {
@@ -69,7 +71,6 @@ header input:focus {
 .location .date {
     color: #FFFFFF;
     font-size: 16px;
-    margin-bottom: 30px;
 }
 
 
@@ -106,7 +107,7 @@ header input:focus {
 
 .current .hi-low {
     color: #FFFFFF;
-    font-size: 20px;
+    font-size: 1em;
     font-weight: 500;
 }
 
@@ -204,6 +205,10 @@ header input:focus {
     cursor: pointer;
 }
 
+.forecast-item-date {
+    font-size: 0.95em;
+}
+
 .active {
     border: 2px solid white;
     background-color: rgba(255, 255, 255, 0.3);
@@ -240,6 +245,10 @@ header input:focus {
 }
 
 @media (max-width: 760px) { 
+
+    .forecast-item-date {
+        font-size: 0.9em;
+    }
 
     header input {
         width: 80vw;
