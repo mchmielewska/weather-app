@@ -1,3 +1,5 @@
+import { API_KEY } from "./config.js";
+
 const COLOR_MAPPING = {
     dawn: { "start": "#757abf", "middle": "#8583be", "end": "#eab0d1" },
     sunrise: { "start": "#94c5f8", "middle": "#a6e6ff", "end": "#b1b5ea" },
@@ -16,9 +18,11 @@ function mixGradient(gradient1, gradient2, mixPercentage = 0.5) {
 }
 
 const api = {
-    key: "3738a06f3afcdf6f27d13d28f7fe7392",
+    key: API_KEY,
     base: "https://api.openweathermap.org/data/2.5/"
 }
+
+let getLocation;
 
 const body = document.querySelector('body');
 const baseBackground = window.getComputedStyle(body).backgroundColor;
@@ -30,71 +34,6 @@ let currentWeather;
 let time;
 
 const zeroPad = (num, places) => String(num).padStart(places, '0');
-
-// function LightenDarkenColor(col, amt) {
-  
-//     var usePound = false;
-  
-//     if (col[0] == "#") {
-//         col = col.slice(1);
-//         usePound = true;
-//     }
- 
-//     var num = parseInt(col,16);
- 
-//     var r = (num >> 16) + amt;
- 
-//     if (r > 255) r = 255;
-//     else if  (r < 0) r = 0;
- 
-//     var b = ((num >> 8) & 0x00FF) + amt;
- 
-//     if (b > 255) b = 255;
-//     else if  (b < 0) b = 0;
- 
-//     var g = (num & 0x0000FF) + amt;
- 
-//     if (g > 255) g = 255;
-//     else if (g < 0) g = 0;
- 
-//     const hexColor =  (g | (b << 8) | (r << 16)).toString(16)
-//     return (usePound?"#":"") + zeroPad(hexColor,6);
-  
-// }
-
-// function RGBToHex(rgb) {
-//     // Choose correct separator
-//     let sep = rgb.indexOf(",") > -1 ? "," : " ";
-//     // Turn "rgb(r,g,b)" into [r,g,b]
-//     rgb = rgb.substr(4).split(")")[0].split(sep);
-  
-//     let r = (+rgb[0]).toString(16),
-//         g = (+rgb[1]).toString(16),
-//         b = (+rgb[2]).toString(16);
-  
-//     if (r.length == 1)
-//       r = "0" + r;
-//     if (g.length == 1)
-//       g = "0" + g;
-//     if (b.length == 1)
-//       b = "0" + b;
-  
-//     const hexColor = r + g + b
-//     return "#" + zeroPad(hexColor,6);
-//   }
-
-// // function setBackground(time) {
-// //     let hoursFromNoon = Math.abs(12 - time.getHours());
-// //     let dayPercent = hoursFromNoon/12;
-
-// //     document.body.style.backgroundColor = RGBToHex(baseBackground);
-
-// //     let backgroundColor = window.getComputedStyle(body).backgroundColor;
-
-// //     const newColor = LightenDarkenColor(RGBToHex(backgroundColor), -dayPercent*100);
-
-// //     document.body.style.backgroundColor = newColor;
-// // }
 
 function setHourlyBackground(sunrise, sunset, time) {
         
@@ -109,7 +48,20 @@ function setHourlyBackground(sunrise, sunset, time) {
 
     let percentage = 0.5;
 
-    if (currentTime < (dawnTime - 1)) {
+    if (currentWeather.coord !== undefined) {
+        const currentMonth = time.getMonth() + 1;
+        if (
+        (currentWeather.coord.lat > 0 && (currentMonth > 3 || currentMonth < 10) && sunriseTime === sunsetTime) || 
+        (currentWeather.coord.lat < 0 && (currentMonth < 3 || currentMonth > 10) && sunriseTime === sunsetTime)
+        ) {
+            mixedGradient = mixGradient(COLOR_MAPPING.daytime, COLOR_MAPPING.daytime);
+    } else if (
+        (currentWeather.coord.lat < 0 && (currentMonth > 3 || currentMonth < 10) && sunriseTime === sunsetTime) ||
+        (currentWeather.coord.lat > 0 && (currentMonth < 3 || currentMonth > 10) && sunriseTime === sunsetTime) 
+        ) 
+    { 
+        mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night); 
+    } else if (currentTime < (dawnTime - 1)) {
         mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
     } else if (currentTime < dawnTime) {
         percentage = (currentTime - dawnTime + 1);
@@ -127,6 +79,7 @@ function setHourlyBackground(sunrise, sunset, time) {
         mixedGradient = mixGradient(COLOR_MAPPING.dusk, COLOR_MAPPING.night, percentage);
     } else if (currentTime > (duskTime + 1)) {
         mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
+    }
     }
 
     if (mixedGradient !== undefined) {
@@ -413,7 +366,7 @@ function displayForecast (weather) {
         forecastParentElement.removeChild(forecastParentElement.lastChild);
     }
 
-    for (i in weather.list) {
+    for (let i in weather.list) {
         const id = i;
         let checkedWeather = weather.list[i];
 
