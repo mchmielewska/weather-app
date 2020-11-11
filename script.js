@@ -1,4 +1,4 @@
-import { API_KEY } from "./config.js";
+// import { API_KEY } from "./config.js";
 
 const COLOR_MAPPING = {
     dawn: { "start": "#757abf", "middle": "#8583be", "end": "#eab0d1" },
