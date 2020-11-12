@@ -19,23 +19,6 @@ const api = {
     base: "https://api.openweathermap.org/data/2.5/"
 };
 
-function f() {
-    let x = 3;
-
-    return x;
-}
-
-let getLocation;
-
-const body = document.querySelector('body');
-const baseBackground = window.getComputedStyle(body).backgroundColor;
-
-let now = new Date();
-
-let forecastWeather;
-let currentWeather;
-let time;
-
 const zeroPad = (num, places) => String(num).padStart(places, '0');
 
 const date = document.querySelector('.location .date');
@@ -44,6 +27,16 @@ const searchbox = document.getElementsByClassName('search-box')[0];
 const loader = document.getElementById('loader');
 const dataWrap = document.getElementsByClassName('data-wrap')[0];
 const errorWrap = document.getElementById('error');
+
+const body = document.querySelector('body');
+
+let getLocation;
+
+let now = new Date();
+
+let forecastWeather;
+let currentWeather;
+let time;
 
 let currentInterval;
 
@@ -55,56 +48,89 @@ function mixGradient(gradient1, gradient2, mixPercentage = 0.5) {
     };
 }
 
-function setHourlyBackground(sunrise, sunset, time) {
+function getTimeAsFloat(time) {
+    return time.getHours() + time.getMinutes() / 60;
+}
 
-    const currentTime = time.getHours() + time.getMinutes() / 60;
+function isSouthernHemisphere(coordinates) {
+    return coordinates.lat < 0;
+}
 
-    const dawnTime = sunrise.getHours() + sunrise.getMinutes() / 60 - 1;
-    const sunriseTime = sunrise.getHours() + sunrise.getMinutes() / 60;
-    const sunsetTime = sunset.getHours() + sunset.getMinutes() / 60;
-    const duskTime = sunset.getHours() + sunset.getMinutes() / 60 + 1;
+function isPolarDay(sunriseTime, sunsetTime, coordinates) {
+    const currentMonth = time.getMonth() + 1;
+    return (sunriseTime === sunsetTime) && ((!isSouthernHemisphere(coordinates) && (currentMonth > 3 && currentMonth < 10)) ||
+        (isSouthernHemisphere(coordinates) && (currentMonth < 3 || currentMonth > 10)));
+}
 
-    let mixedGradient;
+function isPolarNight(sunriseTime, sunsetTime, coordinates) {
+    return (sunriseTime === sunsetTime) && !isPolarDay(sunriseTime, sunsetTime, coordinates);
+}
 
+function getDayPhase(sunriseTime, sunsetTime, currentTime, coordinates) {
+    const dawnTime = sunriseTime - 1;
+    const duskTime = sunsetTime + 1;
+
+    let phase;
     let percentage = 0.5;
 
-    if (currentWeather.coord !== undefined) {
-        const currentMonth = time.getMonth() + 1;
-        if (
-            (currentWeather.coord.lat > 0 && (currentMonth > 3 || currentMonth < 10) && sunriseTime === sunsetTime) ||
-            (currentWeather.coord.lat < 0 && (currentMonth < 3 || currentMonth > 10) && sunriseTime === sunsetTime)
-        ) {
-            mixedGradient = mixGradient(COLOR_MAPPING.daytime, COLOR_MAPPING.daytime);
-        } else if (
-            (currentWeather.coord.lat < 0 && (currentMonth > 3 || currentMonth < 10) && sunriseTime === sunsetTime) ||
-            (currentWeather.coord.lat > 0 && (currentMonth < 3 || currentMonth > 10) && sunriseTime === sunsetTime)
-        ) {
-            mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
-        } else if (currentTime < (dawnTime - 1)) {
-            mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
-        } else if (currentTime < dawnTime) {
-            percentage = (currentTime - dawnTime + 1);
-            mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.dawn, percentage);
-        } else if (currentTime >= dawnTime && currentTime <= sunriseTime) {
-            percentage = (currentTime - dawnTime) / (sunriseTime - dawnTime);
-            mixedGradient = mixGradient(COLOR_MAPPING.dawn, COLOR_MAPPING.sunrise, percentage);
-        } else if (currentTime > sunriseTime && currentTime < sunsetTime) {
-            mixedGradient = mixGradient(COLOR_MAPPING.daytime, COLOR_MAPPING.daytime);
-        } else if (currentTime >= sunsetTime && currentTime <= duskTime) {
-            percentage = (currentTime - sunsetTime) / (duskTime - sunsetTime);
-            mixedGradient = mixGradient(COLOR_MAPPING.sunset, COLOR_MAPPING.dusk, percentage);
-        } else if (currentTime <= (duskTime + 1)) {
-            percentage = (duskTime - currentTime + 1);
-            mixedGradient = mixGradient(COLOR_MAPPING.dusk, COLOR_MAPPING.night, percentage);
-        } else if (currentTime > (duskTime + 1)) {
-            mixedGradient = mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
-        }
+    if (isPolarDay(sunriseTime, sunsetTime, coordinates)) {
+        phase = "daytime";
+    } else if (isPolarNight(sunriseTime, sunsetTime, coordinates)) {
+        phase = "night";
+    } else if (currentTime < (dawnTime - 1)) {
+        phase = "night";
+    } else if (currentTime < dawnTime) {
+        percentage = (currentTime - dawnTime + 1);
+        phase = "dawn";
+    } else if (currentTime >= dawnTime && currentTime <= sunriseTime) {
+        percentage = (currentTime - dawnTime) / (sunriseTime - dawnTime);
+        phase = "sunrise";
+    } else if (currentTime > sunriseTime && currentTime < sunsetTime) {
+        phase = "daytime";
+    } else if (currentTime >= sunsetTime && currentTime <= duskTime) {
+        percentage = (currentTime - sunsetTime) / (duskTime - sunsetTime);
+        phase = "sunset";
+    } else if (currentTime <= (duskTime + 1)) {
+        percentage = (duskTime - currentTime + 1);
+        phase = "dusk";
+    } else if (currentTime > (duskTime + 1)) {
+        phase = "night";
     }
 
-    if (mixedGradient !== undefined) {
-        document.body.style.background = `linear-gradient(0deg, ${mixedGradient.start} 0%, ${mixedGradient.middle} 50%, ${mixedGradient.end} 100%)`;
+    return {
+        phase: phase,
+        progress: percentage
     }
+}
 
+function getGradientFromDayPhase(dayPhase) {
+    switch (dayPhase.phase) {
+        case "daytime":
+            return mixGradient(COLOR_MAPPING.daytime, COLOR_MAPPING.daytime);
+        case "dawn":
+            return mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.dawn, dayPhase.progress);
+        case "sunrise":
+            return mixGradient(COLOR_MAPPING.dawn, COLOR_MAPPING.sunrise, dayPhase.progress);
+        case "sunset":
+            return mixGradient(COLOR_MAPPING.sunset, COLOR_MAPPING.dusk, dayPhase.progress);
+        case "dusk":
+            return mixGradient(COLOR_MAPPING.dusk, COLOR_MAPPING.night, dayPhase.progress);
+        case "night":
+            return mixGradient(COLOR_MAPPING.night, COLOR_MAPPING.night);
+    }
+}
+
+function setHourlyBackground(sunrise, sunset, time) {
+    if (currentWeather.coord === undefined || !isFinite(sunset)) return;
+
+    const currentTime = getTimeAsFloat(time);
+    const sunriseTime = getTimeAsFloat(sunrise);
+    const sunsetTime = getTimeAsFloat(sunset);
+
+    const dayPhase = getDayPhase(sunriseTime, sunsetTime, currentTime, currentWeather.coord);
+    const mixedGradient = getGradientFromDayPhase(dayPhase);
+
+    document.body.style.background = `linear-gradient(0deg, ${mixedGradient.start} 0%, ${mixedGradient.middle} 50%, ${mixedGradient.end} 100%)`;
 }
 
 function displayLoader() {
@@ -191,7 +217,7 @@ function showPosition(position) {
 }
 
 function getResultsLocal() {
-    getLocation = () =>  navigator.geolocation.getCurrentPosition(showPosition, handleGeolocationError);
+    getLocation = () => navigator.geolocation.getCurrentPosition(showPosition, handleGeolocationError);
     getLocation();
 }
 
@@ -204,11 +230,9 @@ function weatherIcon(weather, weatherClass, id = 0) {
 
     function getIconSelector() {
         if (weatherClass === 'current') {
-            let query = '.current .weather-icon';
-            return query;
+            return '.current .weather-icon';
         } else {
-            let query = `.weather-icon[data-index="${id}"]`;
-            return query;
+            return `.weather-icon[data-index="${id}"]`;
         }
     }
 
@@ -425,7 +449,7 @@ function showDetailsTab() {
                 <p>hide details</p>
                 <a href=# id="button-show" class="button hidden"><img src="./images/show.png"></a>
                 <a href=# id="button-hide" class="button"><img src="./images/hide.png"></a>
-            `;
+         `;
     const buttons = document.getElementsByClassName('button');
     const showButton = document.getElementById('button-show');
     const hideButton = document.getElementById('button-hide');
