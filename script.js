@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 // import { API_KEY } from "./config.js";
 
 const COLOR_MAPPING = {
@@ -7,7 +9,7 @@ const COLOR_MAPPING = {
     sunset: { "start": "#163C52", "middle": "#C5752D", "end": "#2F1107" },
     dusk: { "start": "#010A10", "middle": "#59230B", "end": "#2F1107" },
     night: { "start": "#000000", "middle": "#000000", "end": "#000000" }
-}
+};
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -15,6 +17,12 @@ const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 const api = {
     key: API_KEY,
     base: "https://api.openweathermap.org/data/2.5/"
+};
+
+function f() {
+    let x = 3;
+
+    return x;
 }
 
 let getLocation;
@@ -44,7 +52,7 @@ function mixGradient(gradient1, gradient2, mixPercentage = 0.5) {
         "start": chroma.mix(gradient1.start, gradient2.start, mixPercentage).hex(),
         "middle": chroma.mix(gradient1.middle, gradient2.middle, mixPercentage).hex(),
         "end": chroma.mix(gradient1.end, gradient2.end, mixPercentage).hex()
-    }
+    };
 }
 
 function setHourlyBackground(sunrise, sunset, time) {
@@ -58,7 +66,7 @@ function setHourlyBackground(sunrise, sunset, time) {
 
     let mixedGradient;
 
-    let percentage = 0.5
+    let percentage = 0.5;
 
     if (currentWeather.coord !== undefined) {
         const currentMonth = time.getMonth() + 1;
@@ -116,19 +124,19 @@ function showError() {
 }
 
 function hideError() {
-    errorWrap.innerText = ''
+    errorWrap.innerText = '';
     errorWrap.classList.add('hidden');
     dataWrap.classList.remove('hidden');
 }
 
 function setQuery(e) {
-    if (e.keyCode == 13) {
-        hideError();
-        displayLoader();
-        showDetailsTab();
-        getResults(searchbox.value);
-        getResultsForecast(searchbox.value);
-    }
+    if (e.keyCode != 13) return;
+
+    hideError();
+    displayLoader();
+    showDetailsTab();
+    getResults(searchbox.value);
+    getResultsForecast(searchbox.value);
 }
 
 function getResults(query) {
@@ -143,7 +151,7 @@ function getResults(query) {
             hideLoader();
             showError();
             document.body.style.background = 'linear-gradient(0deg, rgb(99, 158, 168) 0%, rgb(3, 80, 102) 100%)';
-        })
+        });
 }
 
 function getResultsForecast(query) {
@@ -160,7 +168,7 @@ function displayLocation(weather) {
 
 function handleGeolocationError(error) {
     hideLoader();
-    const currentLocation = document.querySelector('.location')
+    const currentLocation = document.querySelector('.location');
     currentLocation.innerText = "Geolocation is not supported by this browser.";
 }
 
@@ -183,7 +191,7 @@ function showPosition(position) {
 }
 
 function getResultsLocal() {
-    getLocation = () =>  navigator.geolocation.getCurrentPosition(showPosition, handleGeolocationError)
+    getLocation = () =>  navigator.geolocation.getCurrentPosition(showPosition, handleGeolocationError);
     getLocation();
 }
 
@@ -196,50 +204,49 @@ function weatherIcon(weather, weatherClass, id = 0) {
 
     function getIconSelector() {
         if (weatherClass === 'current') {
-            let query = '.current .weather-icon'
+            let query = '.current .weather-icon';
             return query;
         } else {
-            let query = `.weather-icon[data-index="${id}"]`
+            let query = `.weather-icon[data-index="${id}"]`;
             return query;
         }
     }
 
-    function weatherImage(weatherName) {
-        return weatherIcon.innerHTML = `<img src="./images/${weatherName}.png"></img>`
+    function setWeatherImage(weatherName) {
+        weatherIcon.innerHTML = `<img src="./images/${weatherName}.png"></img>`;
     }
 
     switch (weatherName) {
         case "clouds":
             if (weatherId == "801") {
-                weatherImage('clouds801');
-                break;
+                setWeatherImage('clouds801');
             } else {
-                weatherImage('clouds');
-                break;
-            };
+                setWeatherImage('clouds');
+            }
+            break;
         case "clear":
-            weatherImage('sunny');
+            setWeatherImage('sunny');
             break;
         case "fog":
-            weatherImage('fog');
+            setWeatherImage('fog');
             break;
         case "mist":
-            weatherImage('fog');
+            setWeatherImage('fog');
             break;
         case "rain":
-            weatherImage('rain');
+            setWeatherImage('rain');
             break;
         case "sunny":
-            weatherImage('sunny');
+            setWeatherImage('sunny');
             break;
         case "snow":
-            weatherImage('snow');
+            setWeatherImage('snow');
             break;
         case "thunderstorm":
-            weatherImage('storm');
+            setWeatherImage('storm');
             break;
         case "drizzle":
-            weatherImage('drizzle');
+            setWeatherImage('drizzle');
             break;
         default:
             break;
@@ -254,7 +261,7 @@ function updateDetailsItem(id, content, rawValue) {
         const item = detailsItem.getElementsByClassName('content')[0];
         item.innerText = content;
     } else {
-        detailsItem.classList.add('hidden')
+        detailsItem.classList.add('hidden');
     }
 }
 
@@ -288,7 +295,7 @@ function displayMainWeather(weather) {
 
     weatherIcon(weather.weather[0], 'current');
 
-    const detailsButton = document.getElementsByClassName('show-details')[0]
+    const detailsButton = document.getElementsByClassName('show-details')[0];
     detailsButton.classList.remove('hidden');
     detailsButton.classList.add('mobile-visible');
 
@@ -307,7 +314,7 @@ function displayMainWeather(weather) {
     const sunsetTime = `${sunset.getHours()}:${zeroPad(sunset.getMinutes(), 2)}`;
 
     updateDetailsItem('sunrise', sunriseTime, weather.sys.sunrise);
-    updateDetailsItem('sunset', sunsetTime, weather.sys.sunset)
+    updateDetailsItem('sunset', sunsetTime, weather.sys.sunset);
 
     updateDetailsItem('wind', `${weather.wind.speed} m/s`, weather.wind.speed);
     updateDetailsItem('humid', `${weather.main.humidity} %`, weather.main.humidity);
@@ -323,14 +330,14 @@ function displayMainWeather(weather) {
         window.clearInterval(currentInterval);
     }
 
-    currentInterval = setInterval(backgroundCheck, 1000)
+    currentInterval = setInterval(backgroundCheck, 1000);
 }
 
 function removeActive() {
     const forecastItems = document.getElementsByClassName('active');
     for (const item of forecastItems) {
         item.classList.remove('active');
-    };
+    }
 }
 
 function checkDailyForecast() {
@@ -341,14 +348,14 @@ function checkDailyForecast() {
             if (!item.classList.contains('active')) {
                 removeActive();
                 item.classList.add('active');
-                displayMainWeather(forecastWeather.list[item.dataset.index])
+                displayMainWeather(forecastWeather.list[item.dataset.index]);
             } else {
                 removeActive();
                 displayMainWeather(currentWeather);
             }
         }
         );
-    };
+    }
 }
 
 function displayForecast(weather) {
@@ -370,7 +377,7 @@ function displayForecast(weather) {
         forecastParentElement.appendChild(forecastElement);
 
         let time = new Date(checkedWeather.dt * 1000);
-        time = timeInCurrentTimezone(time)
+        time = timeInCurrentTimezone(time);
 
         forecastElement.innerHTML =
             `<div class="forecast-item-date">
@@ -386,7 +393,7 @@ function displayForecast(weather) {
                 ${Math.round(checkedWeather.main.temp)}
                 <span>°c</span>
             </div>
-            `
+            `;
         weatherIcon(checkedWeather.weather[0], 'forecast-item', i);
     }
 
@@ -412,13 +419,13 @@ function forecastDateBuilder(d) {
 
 function showDetailsTab() {
     const details = document.getElementsByClassName('details')[0];
-    const showDetailsElement = document.getElementsByClassName('show-details')[0]
+    const showDetailsElement = document.getElementsByClassName('show-details')[0];
     showDetailsElement.innerHTML =
         `
                 <p>hide details</p>
                 <a href=# id="button-show" class="button hidden"><img src="./images/show.png"></a>
                 <a href=# id="button-hide" class="button"><img src="./images/hide.png"></a>
-            `
+            `;
     const buttons = document.getElementsByClassName('button');
     const showButton = document.getElementById('button-show');
     const hideButton = document.getElementById('button-hide');
@@ -444,7 +451,7 @@ function showDetailsTab() {
                 detailsText.innerText = "show details";
             }
         });
-    };
+    }
 }
 
 date.innerText = dateBuilder(now);

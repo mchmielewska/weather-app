@@ -73,7 +73,6 @@ header input:focus {
     font-size: 16px;
 }
 
-
 .current {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -197,7 +196,7 @@ header input:focus {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    transition: 500ms linear; 
+    transition: 500ms linear;
 }
 
 .forecast-item:hover {
@@ -244,34 +243,27 @@ header input:focus {
     }
 }
 
-@media (max-width: 760px) { 
-
+@media (max-width: 760px) {
     .forecast-item-date {
         font-size: 0.9em;
     }
-
     header input {
         width: 80vw;
     }
-
     .details {
         width: 90%;
         margin: 0;
     }
-
     .main-container {
         display: flex;
         flex-direction: column;
     }
-
     .mobile-visible {
         display: initial;
     }
-
     .data-wrap {
         width: 100%;
     }
-
     .forecast {
         flex-wrap: wrap;
         width: 100%;
@@ -279,7 +271,6 @@ header input:focus {
         margin-left: 0;
         margin-right: 0;
     }
-
     .forecast-item {
         margin-bottom: 15px;
         flex-grow: 0;
@@ -287,7 +278,7 @@ header input:focus {
     }
 }
 
-@media (max-width: 350px) { 
+@media (max-width: 350px) {
     .forecast-item {
         margin-bottom: 15px;
         flex-grow: 0;
